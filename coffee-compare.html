@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coffee money: two sets of assumptions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --paper: #F7F5F0;
+      --card: #FFFFFF;
+      --ink: #12161B;
+      --muted: #5E6F84;
+      --blue: #4890F0;
+      --deep: #2A63C4;
+      --light: #9DBCEE;
+      --grid: #E6E1D8;
+      --amber: #F2A900;
+      --amber-dark: #C98200;
+      --display: "Fraunces", Georgia, "Times New Roman", serif;
+      --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--body);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.nocursor, body.nocursor * {
+      cursor: none !important;
+    }
+
+    /* Screen container: 1920x1080 optimized, responsive */
+    .viewport {
+      width: 100%;
+      height: 100vh;
+      max-height: 1080px;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 28px 14px;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-shrink: 0;
+    }
+
+    .header-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .eyebrow {
+      font-family: var(--body);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--deep);
+    }
+    .eyebrow b {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .title {
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 34px;
+      line-height: 1.1;
+      letter-spacing: -.018em;
+      color: var(--ink);
+    }
+
+    /* Shared Years slider card */
+    .years-card {
+      background: var(--card);
+      border: 1px solid var(--grid);
+      border-radius: 12px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 14px rgba(18,22,27,.03);
+    }
+
+    .years-label-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 110px;
+    }
+
+    .years-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .years-val {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 24px;
+      color: var(--deep);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    .years-val span {
+      font-size: 14px;
+      font-family: var(--body);
+      font-weight: 600;
+      color: var(--muted);
+      margin-left: 3px;
+    }
+
+    .years-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 220px;
+    }
+
+    /* Main layout: 2 columns on 1920x1080 */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 880px 1fr;
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    /* Left column: input panels + results */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .panels-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--grid);
+      border-radius: 14px;
+      padding: 14px 16px 12px;
+      box-shadow: 0 6px 18px rgba(18,22,27,.03);
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      position: relative;
+    }
+
+    .panel.panel-mine {
+      border-top: 4px solid var(--blue);
+    }
+    .panel.panel-suze {
+      border-top: 4px solid var(--amber);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--grid);
+    }
+
+    .panel-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .panel-mine .panel-dot { background: var(--blue); }
+    .panel-suze .panel-dot { background: var(--amber); }
+
+    .panel-title {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--ink);
+    }
+
+    .panel-monthly {
+      font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .panel-monthly b {
+      color: var(--ink);
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid var(--grid);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-family: var(--body);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .btn-reset:hover {
+      background: var(--paper);
+      color: var(--ink);
+      border-color: var(--muted);
+    }
+
+    /* Input rows */
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .input-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .input-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .num-box-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--paper);
+      border: 1px solid var(--grid);
+      border-radius: 6px;
+      padding: 2px 6px;
+      transition: border-color .15s;
+    }
+    .num-box-wrap:focus-within {
+      border-color: var(--deep);
+      background: #FFFFFF;
+    }
+    .num-affix {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .num-input {
+      width: 54px;
+      border: none;
+      background: transparent;
+      font-family: var(--body);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      text-align: right;
+      outline: none;
+      font-variant-numeric: tabular-nums;
+      padding: 1px 2px;
+    }
+
+    /* Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--grid);
+      outline: none;
+      margin: 3px 0 2px;
+      cursor: pointer;
+    }
+
+    .panel-mine input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 1px 4px rgba(42,99,196,.35);
+      cursor: pointer;
+      border: 2px solid #FFFFFF;
+      transition: transform .1s;
+    }
+    .panel-mine input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .panel-suze input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 1px 4px rgba(201,130,0,.35);
+      cursor: pointer;
+      border: 2px solid #FFFFFF;
+      transition: transform .1s;
+    }
+    .panel-suze input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .years-card input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--deep);
+      box-shadow: 0 2px 5px rgba(18,22,27,.2);
+      cursor: pointer;
+      border: 2px solid #FFFFFF;
+      transition: transform .1s;
+    }
+    .years-card input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Comparison sentence between panels */
+    .diff-banner {
+      background: #FFF9EC;
+      border: 1px solid #F6DFB2;
+      border-left: 4px solid var(--amber);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(18,22,27,.02);
+    }
+    .diff-banner strong {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 17px;
+      color: var(--amber-dark);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Results section under panels */
+    .results-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .results-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* 3 secondary cards */
+    .results-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .res-card {
+      background: var(--card);
+      border: 1px solid var(--grid);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(18,22,27,.02);
+      transition: all .2s ease;
+    }
+    .res-card.active-view-card {
+      border-color: var(--deep);
+      background: #F8FAFD;
+    }
+    .res-card-suze.active-view-card {
+      border-color: var(--amber);
+      background: #FFFDF8;
+    }
+
+    .res-card-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .res-card-val {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    /* Primary highlight card: In today's money (largest, Fraunces 800) */
+    .res-card-main {
+      background: var(--card);
+      border: 1.5px solid var(--grid);
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 12px rgba(18,22,27,.03);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      transition: all .2s ease;
+    }
+
+    .res-card-main.res-mine {
+      border-left: 5px solid var(--blue);
+    }
+    .res-card-main.res-suze {
+      border-left: 5px solid var(--amber);
+    }
+
+    .res-card-main.active-view-card {
+      border-color: var(--deep);
+      background: #FAF8F4;
+      box-shadow: 0 4px 16px rgba(42,99,196,.08);
+    }
+    .res-card-main.res-suze.active-view-card {
+      border-color: var(--amber);
+      background: #FFFCF2;
+      box-shadow: 0 4px 16px rgba(242,169,0,.10);
+    }
+
+    .res-card-main .res-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .res-card-main-val {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 30px;
+      line-height: 1.05;
+      letter-spacing: -.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+    .res-mine .res-card-main-val {
+      color: var(--deep);
+    }
+    .res-suze .res-card-main-val {
+      color: var(--amber-dark);
+    }
+
+    /* Right column: Chart area */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .chart-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    .controls-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* 3-way view switch */
+    .view-switch {
+      display: inline-flex;
+      background: #ECE7DD;
+      border: 1px solid var(--grid);
+      border-radius: 9px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .switch-btn {
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      padding: 6px 14px;
+      font-family: var(--body);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .18s ease;
+    }
+    .switch-btn kbd {
+      background: rgba(18,22,27,.06);
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: var(--body);
+      font-weight: 700;
+      padding: 1px 4px;
+      color: inherit;
+    }
+
+    .switch-btn:hover {
+      color: var(--ink);
+    }
+
+    .switch-btn.active {
+      background: var(--card);
+      color: var(--ink);
+      box-shadow: 0 2px 6px rgba(18,22,27,.08);
+    }
+    .switch-btn.active kbd {
+      background: var(--paper);
+      color: var(--deep);
+    }
+
+    /* Play growth button */
+    .btn-replay {
+      background: var(--card);
+      border: 1px solid var(--grid);
+      border-radius: 9px;
+      padding: 6px 14px;
+      font-family: var(--body);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .18s ease;
+      box-shadow: 0 2px 6px rgba(18,22,27,.03);
+    }
+    .btn-replay svg {
+      color: var(--deep);
+      transition: transform .18s;
+    }
+    .btn-replay:hover {
+      background: #FFFFFF;
+      border-color: var(--deep);
+      color: var(--deep);
+      box-shadow: 0 3px 10px rgba(42,99,196,.12);
+    }
+    .btn-replay:hover svg {
+      transform: scale(1.15);
+    }
+    .btn-replay kbd {
+      background: rgba(18,22,27,.06);
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: var(--body);
+      font-weight: 700;
+      padding: 1px 5px;
+      color: inherit;
+    }
+    .btn-replay.playing {
+      background: #EFF6FF;
+      border-color: var(--blue);
+      color: var(--deep);
+    }
+
+    /* Animated progress tag */
+    .growth-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--deep);
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-variant-numeric: tabular-nums;
+      transition: opacity .3s;
+    }
+    .growth-status.hidden {
+      display: none;
+    }
+    .growth-pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 0 rgba(72,144,240,0.7);
+      animation: pulse-ring 1.2s infinite;
+    }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(72,144,240,0.7); }
+      70% { box-shadow: 0 0 0 6px rgba(72,144,240,0); }
+      100% { box-shadow: 0 0 0 0 rgba(72,144,240,0); }
+    }
+
+    /* Chart legend indicator */
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-line {
+      width: 16px;
+      height: 3px;
+      border-radius: 2px;
+    }
+    .legend-line.legend-mine { background: var(--blue); }
+    .legend-line.legend-suze { background: var(--amber); }
+    .legend-line.legend-dashed {
+      background: transparent;
+      border-top: 2px dashed #8E9DAE;
+      height: 0;
+    }
+
+    /* Chart Card */
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--grid);
+      border-radius: 14px;
+      padding: 16px 18px 12px;
+      box-shadow: 0 6px 20px rgba(18,22,27,.03);
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Footer & shortcuts bar */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .footer-left {
+      font-weight: 500;
+    }
+
+    .footer-keys {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer-keys kbd {
+      background: var(--card);
+      border: 1px solid var(--grid);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: inherit;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* Responsive media queries */
+    @media (max-width: 1200px) {
+      .viewport {
+        height: auto;
+        max-height: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 16px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .main-grid {
+        grid-template-columns: 1fr;
+        min-width: 0;
+      }
+      .right-col {
+        min-width: 0;
+      }
+      .chart-card {
+        height: 480px;
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .panels-pair, .results-pair {
+        grid-template-columns: 1fr;
+        min-width: 0;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: .12em;
+        line-height: 1.3;
+      }
+      .title {
+        font-size: 24px;
+        line-height: 1.15;
+      }
+      .years-card {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        box-sizing: border-box;
+      }
+      .years-slider-wrap {
+        width: 130px;
+      }
+      .chart-card {
+        height: 380px;
+      }
+      .chart-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        width: 100%;
+      }
+      .view-switch {
+        width: 100%;
+        display: flex;
+        box-sizing: border-box;
+      }
+      .switch-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 6px 4px;
+        font-size: 11.5px;
+      }
+      .footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .years-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .years-slider-wrap {
+        width: 100%;
+      }
+      .results-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 5px;
+      }
+      .res-card {
+        padding: 6px 6px;
+      }
+      .res-card-label {
+        font-size: 9px;
+      }
+      .res-card-val {
+        font-size: 13.5px;
+      }
+      .res-card-main-val {
+        font-size: 24px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="viewport" id="viewport">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-titles">
+        <div class="eyebrow">Is That Actually True? <b>·</b> The calculator</div>
+        <h1 class="title">Coffee money: two sets of assumptions</h1>
+      </div>
+
+      <div class="years-card">
+        <div class="years-label-group">
+          <span class="years-tag">Horizon</span>
+          <div class="years-val"><span id="yearsDisp">40</span><span>years</span></div>
+        </div>
+        <div class="years-slider-wrap">
+          <input type="range" id="yearsRange" min="1" max="50" step="1" value="40" aria-label="Shared Years Slider">
+        </div>
+      </div>
+    </header>
+
+    <!-- Main 2-column Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Inputs & Results -->
+      <section class="left-col">
+        <!-- Two Input Panels Side by Side -->
+        <div class="panels-pair">
+          <!-- Mine Panel -->
+          <div class="panel panel-mine" id="panelMine">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-dot"></span>
+                <span class="panel-title">Mine</span>
+                <span class="panel-monthly" id="mineMonthlyText">P = €91.65/mo</span>
+              </div>
+              <button class="btn-reset" id="mineResetBtn" title="Reset Mine defaults">Reset</button>
+            </div>
+
+            <!-- Coffee price -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="minePriceNum">Coffee price</label>
+                <div class="num-box-wrap">
+                  <span class="num-affix">€</span>
+                  <input type="number" id="minePriceNum" class="num-input" min="0.5" max="15" step="0.05" value="4.50">
+                </div>
+              </div>
+              <input type="range" id="minePriceRange" min="0.5" max="10" step="0.05" value="4.50" aria-label="Mine coffee price">
+            </div>
+
+            <!-- Home coffee cost -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="mineHomeNum">Home coffee cost</label>
+                <div class="num-box-wrap">
+                  <span class="num-affix">€</span>
+                  <input type="number" id="mineHomeNum" class="num-input" min="0" max="5" step="0.01" value="0.27">
+                </div>
+              </div>
+              <input type="range" id="mineHomeRange" min="0" max="3" step="0.01" value="0.27" aria-label="Mine home coffee cost">
+            </div>
+
+            <!-- Coffees per week -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="mineCupsNum">Coffees per week</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="mineCupsNum" class="num-input" min="1" max="35" step="1" value="5">
+                  <span class="num-affix">/wk</span>
+                </div>
+              </div>
+              <input type="range" id="mineCupsRange" min="1" max="21" step="1" value="5" aria-label="Mine coffees per week">
+            </div>
+
+            <!-- Annual return -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="mineReturnNum">Annual return</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="mineReturnNum" class="num-input" min="0" max="25" step="0.1" value="7.0">
+                  <span class="num-affix">%</span>
+                </div>
+              </div>
+              <input type="range" id="mineReturnRange" min="0" max="20" step="0.1" value="7.0" aria-label="Mine annual return">
+            </div>
+
+            <!-- Inflation -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="mineInflationNum">Inflation (discount)</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="mineInflationNum" class="num-input" min="0" max="15" step="0.1" value="3.0">
+                  <span class="num-affix">%</span>
+                </div>
+              </div>
+              <input type="range" id="mineInflationRange" min="0" max="15" step="0.1" value="3.0" aria-label="Mine inflation discount rate">
+            </div>
+
+            <!-- Tax rate -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="mineTaxNum">Tax rate on gain</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="mineTaxNum" class="num-input" min="0" max="60" step="1" value="35">
+                  <span class="num-affix">%</span>
+                </div>
+              </div>
+              <input type="range" id="mineTaxRange" min="0" max="60" step="1" value="35" aria-label="Mine tax rate on capital gain">
+            </div>
+          </div>
+
+          <!-- Suze's Panel -->
+          <div class="panel panel-suze" id="panelSuze">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-dot"></span>
+                <span class="panel-title">Suze's</span>
+                <span class="panel-monthly" id="suzeMonthlyText">P = €97.50/mo</span>
+              </div>
+              <button class="btn-reset" id="suzeResetBtn" title="Reset Suze defaults">Reset</button>
+            </div>
+
+            <!-- Coffee price -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="suzePriceNum">Coffee price</label>
+                <div class="num-box-wrap">
+                  <span class="num-affix">€</span>
+                  <input type="number" id="suzePriceNum" class="num-input" min="0.5" max="15" step="0.05" value="4.50">
+                </div>
+              </div>
+              <input type="range" id="suzePriceRange" min="0.5" max="10" step="0.05" value="4.50" aria-label="Suze coffee price">
+            </div>
+
+            <!-- Home coffee cost -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="suzeHomeNum">Home coffee cost</label>
+                <div class="num-box-wrap">
+                  <span class="num-affix">€</span>
+                  <input type="number" id="suzeHomeNum" class="num-input" min="0" max="5" step="0.01" value="0.00">
+                </div>
+              </div>
+              <input type="range" id="suzeHomeRange" min="0" max="3" step="0.01" value="0.00" aria-label="Suze home coffee cost">
+            </div>
+
+            <!-- Coffees per week -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="suzeCupsNum">Coffees per week</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="suzeCupsNum" class="num-input" min="1" max="35" step="1" value="5">
+                  <span class="num-affix">/wk</span>
+                </div>
+              </div>
+              <input type="range" id="suzeCupsRange" min="1" max="21" step="1" value="5" aria-label="Suze coffees per week">
+            </div>
+
+            <!-- Annual return -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="suzeReturnNum">Annual return</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="suzeReturnNum" class="num-input" min="0" max="25" step="0.1" value="12.2">
+                  <span class="num-affix">%</span>
+                </div>
+              </div>
+              <input type="range" id="suzeReturnRange" min="0" max="20" step="0.1" value="12.2" aria-label="Suze annual return">
+            </div>
+
+            <!-- Inflation -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="suzeInflationNum">Inflation (discount)</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="suzeInflationNum" class="num-input" min="0" max="15" step="0.1" value="0.0">
+                  <span class="num-affix">%</span>
+                </div>
+              </div>
+              <input type="range" id="suzeInflationRange" min="0" max="15" step="0.1" value="0.0" aria-label="Suze inflation discount rate">
+            </div>
+
+            <!-- Tax rate -->
+            <div class="input-row">
+              <div class="input-top">
+                <label class="input-label" for="suzeTaxNum">Tax rate on gain</label>
+                <div class="num-box-wrap">
+                  <input type="number" id="suzeTaxNum" class="num-input" min="0" max="60" step="1" value="0">
+                  <span class="num-affix">%</span>
+                </div>
+              </div>
+              <input type="range" id="suzeTaxRange" min="0" max="60" step="1" value="0" aria-label="Suze tax rate on capital gain">
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparison Sentence between Panels -->
+        <div class="diff-banner" id="diffBanner">
+          <span id="diffSentence">Suze's assumptions add <strong id="diffAmount">€950,891</strong> in today's money</span>
+        </div>
+
+        <!-- Final-Year Cards Under Each Panel -->
+        <div class="results-pair">
+          <!-- Mine Results -->
+          <div class="results-group">
+            <div class="results-row">
+              <div class="res-card" id="minePaidCard">
+                <span class="res-card-label">Paid in</span>
+                <span class="res-card-val" id="minePaidVal">€43,992</span>
+              </div>
+              <div class="res-card" id="mineFvCard">
+                <span class="res-card-label">Future value</span>
+                <span class="res-card-val" id="mineFvVal">€226,517</span>
+              </div>
+              <div class="res-card" id="mineTaxCard">
+                <span class="res-card-label">After tax</span>
+                <span class="res-card-val" id="mineTaxVal">€162,633</span>
+              </div>
+            </div>
+            <div class="res-card-main res-mine" id="mineTodayCard">
+              <span class="res-card-label">In today's money</span>
+              <span class="res-card-main-val" id="mineTodayVal">€49,856</span>
+            </div>
+          </div>
+
+          <!-- Suze Results -->
+          <div class="results-group">
+            <div class="results-row">
+              <div class="res-card res-card-suze" id="suzePaidCard">
+                <span class="res-card-label">Paid in</span>
+                <span class="res-card-val" id="suzePaidVal">€46,800</span>
+              </div>
+              <div class="res-card res-card-suze" id="suzeFvCard">
+                <span class="res-card-label">Future value</span>
+                <span class="res-card-val" id="suzeFvVal">€1,000,747</span>
+              </div>
+              <div class="res-card res-card-suze" id="suzeTaxCard">
+                <span class="res-card-label">After tax</span>
+                <span class="res-card-val" id="suzeTaxVal">€1,000,747</span>
+              </div>
+            </div>
+            <div class="res-card-main res-suze" id="suzeTodayCard">
+              <span class="res-card-label">In today's money</span>
+              <span class="res-card-main-val" id="suzeTodayVal">€1,000,747</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Interactive Chart -->
+      <section class="right-col">
+        <div class="chart-controls">
+          <div class="controls-left">
+            <div class="view-switch" role="tablist" aria-label="Chart View Switch">
+              <button class="switch-btn active" id="viewBtn0" role="tab" aria-selected="true" onclick="setView(0)">
+                <span>Balance</span><kbd>1</kbd>
+              </button>
+              <button class="switch-btn" id="viewBtn1" role="tab" aria-selected="false" onclick="setView(1)">
+                <span>After tax</span><kbd>2</kbd>
+              </button>
+              <button class="switch-btn" id="viewBtn2" role="tab" aria-selected="false" onclick="setView(2)">
+                <span>In today's money</span><kbd>3</kbd>
+              </button>
+            </div>
+
+            <button class="btn-replay" id="replayBtn" onclick="playGrowthAnimation()" title="Show money growing over time">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <span>Play growth</span><kbd>Space</kbd>
+            </button>
+
+            <div class="growth-status hidden" id="growthStatus">
+              <span class="growth-pulse-dot"></span>
+              <span id="growthStatusText">Year 0 / 40</span>
+            </div>
+          </div>
+
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-line legend-mine"></span>
+              <span>Mine</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line legend-suze"></span>
+              <span>Suze's</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line legend-dashed"></span>
+              <span>Paid in</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="canvas-wrap">
+            <canvas id="growthChart"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-left">Not financial advice.</div>
+      <div class="footer-keys">
+        <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> Views</span>
+        <span>·</span>
+        <span><kbd>Space</kbd> Play growth</span>
+        <span>·</span>
+        <span><kbd>M</kbd> Animate Suze return</span>
+        <span>·</span>
+        <span><kbd>R</kbd> Reset</span>
+        <span>·</span>
+        <span><kbd>F</kbd> Fullscreen</span>
+        <span>·</span>
+        <span><kbd>C</kbd> Cursor</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /* Default Configurations */
+    const DEFAULTS = {
+      mine: {
+        price: 4.50,
+        homeCost: 0.27,
+        cups: 5,
+        annualReturn: 0.07,
+        inflation: 0.03,
+        taxRate: 0.35
+      },
+      suze: {
+        price: 4.50,
+        homeCost: 0.00,
+        cups: 5,
+        annualReturn: 0.122,
+        inflation: 0.00,
+        taxRate: 0.00
+      },
+      years: 40
+    };
+
+    let state = {
+      years: 40,
+      activeView: 0, // 0: Balance, 1: After tax, 2: In today's money
+      mine: { ...DEFAULTS.mine },
+      suze: { ...DEFAULTS.suze }
+    };
+
+    // Format Euro helper: e.g. €49,856
+    function formatEuro(x, dp = 0) {
+      const rounded = dp > 0 ? x.toFixed(dp) : Math.round(x);
+      if (dp > 0) {
+        return (x < 0 ? '-' : '') + '€' + Math.abs(x).toLocaleString('en-IE', { minimumFractionDigits: dp, maximumFractionDigits: dp });
+      }
+      return (rounded < 0 ? '-' : '') + '€' + Math.abs(rounded).toLocaleString('en-IE');
+    }
+
+    // Maths engine
+    function calculatePanel(params, years) {
+      const P = (params.price - params.homeCost) * params.cups * 52 / 12;
+      const r = params.annualReturn > 0
+        ? Math.pow(1 + params.annualReturn, 1 / 12) - 1
+        : 0;
+
+      const series = [];
+      for (let t = 0; t <= years; t++) {
+        if (t === 0) {
+          series.push({ t: 0, paidIn: 0, balance: 0, afterTax: 0, todaysMoney: 0 });
+          continue;
+        }
+        const paidIn = P * 12 * t;
+        let balance = 0;
+        if (r === 0) {
+          balance = paidIn;
+        } else {
+          balance = P * (Math.pow(1 + r, 12 * t) - 1) / r;
+        }
+        const gain = balance - paidIn;
+        const afterTax = balance - gain * params.taxRate;
+        const todaysMoney = afterTax / Math.pow(1 + params.inflation, t);
+
+        series.push({
+          t,
+          paidIn,
+          balance,
+          afterTax,
+          todaysMoney
+        });
+      }
+
+      return {
+        P,
+        r,
+        series,
+        final: series[series.length - 1]
+      };
+    }
+
+    // Initialize Chart.js with visual uplift & floating terminal badges
+    let growthChart = null;
+    let growthAnimId = null;
+    let isGrowthAnimating = false;
+    // Fractional year the growth animation has reached (null = show everything)
+    let growthRevealYear = null;
+
+    // Custom plugin: Terminal value callout badges & glowing beacon at frontier
+    const calloutPlugin = {
+      id: 'calloutPlugin',
+      beforeDatasetsDraw(chart) {
+        if (growthRevealYear === null) return;
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+        const frontierX = chart.scales.x.getPixelForValue(growthRevealYear);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, Math.max(0, frontierX), chart.height);
+        ctx.clip();
+      },
+      afterDatasetsDraw(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+        if (growthRevealYear !== null) ctx.restore();
+
+        // Targets: dataset 2 (Suze's) and dataset 0 (Mine)
+        const targets = [
+          { dsIndex: 2, label: "Suze's", color: '#F2A900', textColor: '#8A5300', align: 'top' },
+          { dsIndex: 0, label: 'Mine', color: '#4890F0', textColor: '#1B4D9B', align: 'bottom' }
+        ];
+
+        targets.forEach(t => {
+          const meta = chart.getDatasetMeta(t.dsIndex);
+          if (!meta || meta.hidden) return;
+
+          let x, y, lastVal = 0;
+          const dsData = chart.data.datasets[t.dsIndex].data;
+          if (growthRevealYear !== null) {
+            // Interpolate the frontier point smoothly between whole years
+            const maxIdx = dsData.length - 1;
+            const i0 = Math.max(0, Math.min(maxIdx, Math.floor(growthRevealYear)));
+            const i1 = Math.min(maxIdx, i0 + 1);
+            const frac = growthRevealYear - i0;
+            lastVal = dsData[i0] + (dsData[i1] - dsData[i0]) * frac;
+            x = chart.scales.x.getPixelForValue(growthRevealYear);
+            y = chart.scales.y.getPixelForValue(lastVal);
+          } else {
+            let lastPt = null;
+            for (let i = meta.data.length - 1; i >= 0; i--) {
+              const pt = meta.data[i];
+              const val = dsData[i];
+              if (pt && !isNaN(pt.x) && !isNaN(pt.y) && val !== null && !isNaN(val)) {
+                lastPt = pt;
+                lastVal = val;
+                break;
+              }
+            }
+            if (!lastPt) return;
+            x = lastPt.x;
+            y = lastPt.y;
+          }
+          if (isNaN(x) || isNaN(y)) return;
+
+          ctx.save();
+
+          // 1. Glowing beacon at the frontier head
+          ctx.beginPath();
+          ctx.arc(x, y, 7, 0, Math.PI * 2);
+          ctx.fillStyle = t.color + '44'; // 27% alpha
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = t.color;
+          ctx.fill();
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 1.8;
+          ctx.stroke();
+
+          // 2. Floating pill badge
+          const amountStr = formatEuro(lastVal);
+          const badgeText = `${t.label}: ${amountStr}`;
+
+          ctx.font = '600 12px Inter, system-ui, sans-serif';
+          const textMetrics = ctx.measureText(badgeText);
+          const badgeW = textMetrics.width + 20;
+          const badgeH = 25;
+          const radius = 6;
+
+          let badgeX = x - badgeW / 2;
+          // Clamp inside chartArea horizontally
+          badgeX = Math.max(chartArea.left + 6, Math.min(badgeX, chartArea.right - badgeW - 6));
+
+          let badgeY = t.align === 'top' ? y - badgeH - 10 : y + 10;
+          // Check collision with top/bottom
+          if (badgeY < chartArea.top + 6) badgeY = y + 10;
+          if (badgeY + badgeH > chartArea.bottom - 6) badgeY = y - badgeH - 10;
+
+          // Shadow
+          ctx.shadowColor = 'rgba(18, 22, 27, 0.12)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 2;
+
+          // Background
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.roundRect(badgeX, badgeY, badgeW, badgeH, radius);
+          ctx.fill();
+
+          // Border
+          ctx.shadowColor = 'transparent';
+          ctx.strokeStyle = t.color;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // Pill dot
+          ctx.beginPath();
+          ctx.arc(badgeX + 10, badgeY + badgeH / 2, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = t.color;
+          ctx.fill();
+
+          // Pill text
+          ctx.fillStyle = '#12161B';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(badgeText, badgeX + 18, badgeY + badgeH / 2);
+
+          ctx.restore();
+        });
+      }
+    };
+
+    function initChart() {
+      const ctx = document.getElementById('growthChart').getContext('2d');
+      growthChart = new Chart(ctx, {
+        type: 'line',
+        plugins: [calloutPlugin],
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Mine',
+              borderColor: '#4890F0',
+              backgroundColor: function(context) {
+                const chart = context.chart;
+                const { ctx, chartArea } = chart;
+                if (!chartArea) return 'rgba(72, 144, 240, 0.05)';
+                const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                gradient.addColorStop(0, 'rgba(72, 144, 240, 0.22)');
+                gradient.addColorStop(0.7, 'rgba(72, 144, 240, 0.03)');
+                gradient.addColorStop(1, 'rgba(72, 144, 240, 0.0)');
+                return gradient;
+              },
+              borderWidth: 4,
+              borderCapStyle: 'round',
+              borderJoinStyle: 'round',
+              fill: true,
+              tension: 0.14,
+              pointRadius: 0,
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: '#4890F0',
+              data: []
+            },
+            {
+              label: 'Mine (paid in)',
+              borderColor: '#8E9DAE',
+              borderWidth: 1.5,
+              borderDash: [5, 4],
+              fill: false,
+              tension: 0,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              pointHoverBackgroundColor: '#8E9DAE',
+              data: []
+            },
+            {
+              label: "Suze's",
+              borderColor: '#F2A900',
+              backgroundColor: function(context) {
+                const chart = context.chart;
+                const { ctx, chartArea } = chart;
+                if (!chartArea) return 'rgba(242, 169, 0, 0.05)';
+                const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                gradient.addColorStop(0, 'rgba(242, 169, 0, 0.25)');
+                gradient.addColorStop(0.7, 'rgba(242, 169, 0, 0.03)');
+                gradient.addColorStop(1, 'rgba(242, 169, 0, 0.0)');
+                return gradient;
+              },
+              borderWidth: 4,
+              borderCapStyle: 'round',
+              borderJoinStyle: 'round',
+              fill: true,
+              tension: 0.14,
+              pointRadius: 0,
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: '#F2A900',
+              data: []
+            },
+            {
+              label: "Suze's (paid in)",
+              borderColor: '#B8C0CC',
+              borderWidth: 1.5,
+              borderDash: [3, 3],
+              fill: false,
+              tension: 0,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              pointHoverBackgroundColor: '#B8C0CC',
+              data: []
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 550,
+            easing: 'easeOutQuart'
+          },
+          events: [],
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: false,
+              backgroundColor: '#12161B',
+              titleFont: {
+                family: 'Inter',
+                size: 13,
+                weight: '600'
+              },
+              bodyFont: {
+                family: 'Inter',
+                size: 12.5,
+                weight: '500'
+              },
+              padding: 12,
+              boxPadding: 6,
+              cornerRadius: 8,
+              usePointStyle: true,
+              callbacks: {
+                title: function(items) {
+                  return 'Year ' + items[0].label;
+                },
+                label: function(item) {
+                  return ' ' + item.dataset.label + ': ' + formatEuro(item.raw);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: '#E6E1D8',
+                lineWidth: 1
+              },
+              ticks: {
+                color: '#5E6F84',
+                font: {
+                  family: 'Inter',
+                  size: 11.5,
+                  weight: '500'
+                },
+                maxTicksLimit: 11,
+                callback: function(val, index) {
+                  const yr = this.getLabelForValue(val);
+                  return 'Yr ' + yr;
+                }
+              }
+            },
+            y: {
+              grid: {
+                color: '#E6E1D8',
+                lineWidth: 1
+              },
+              ticks: {
+                color: '#5E6F84',
+                font: {
+                  family: 'Inter',
+                  size: 11.5,
+                  weight: '500'
+                },
+                callback: function(val) {
+                  if (val >= 1000000) return '€' + (val / 1000000).toFixed(1) + 'M';
+                  if (val >= 1000) return '€' + Math.round(val / 1000) + 'k';
+                  return '€' + val;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // View switching
+    function setView(viewIndex, animate = true) {
+      if (isGrowthAnimating) {
+        cancelAnimationFrame(growthAnimId);
+        isGrowthAnimating = false;
+        growthRevealYear = null;
+        document.getElementById('replayBtn')?.classList.remove('playing');
+        document.getElementById('growthStatus')?.classList.add('hidden');
+      }
+
+      state.activeView = viewIndex;
+      [0, 1, 2].forEach(i => {
+        const btn = document.getElementById('viewBtn' + i);
+        btn.classList.toggle('active', i === viewIndex);
+        btn.setAttribute('aria-selected', i === viewIndex ? 'true' : 'false');
+      });
+
+      // Update active cards highlighting
+      const cardMap = [
+        ['mineFvCard', 'suzeFvCard'],
+        ['mineTaxCard', 'suzeTaxCard'],
+        ['mineTodayCard', 'suzeTodayCard']
+      ];
+
+      ['minePaidCard', 'suzePaidCard', 'mineFvCard', 'suzeFvCard', 'mineTaxCard', 'suzeTaxCard', 'mineTodayCard', 'suzeTodayCard'].forEach(id => {
+        document.getElementById(id).classList.remove('active-view-card');
+      });
+
+      cardMap[viewIndex].forEach(id => {
+        document.getElementById(id).classList.add('active-view-card');
+      });
+
+      updateUI(animate ? 'animate' : 'none');
+    }
+
+    // Money Growing Over Time Animation
+    function playGrowthAnimation(durationMs = 4200) {
+      cancelAnimationFrame(growthAnimId);
+      // Load the full dataset first so the y-axis locks to its final scale
+      isGrowthAnimating = false;
+      growthRevealYear = null;
+      updateUI('none');
+      growthRevealYear = 0;
+      isGrowthAnimating = true;
+
+      const replayBtn = document.getElementById('replayBtn');
+      const statusEl = document.getElementById('growthStatus');
+      const statusText = document.getElementById('growthStatusText');
+      if (replayBtn) replayBtn.classList.add('playing');
+      if (statusEl) statusEl.classList.remove('hidden');
+
+      const mineRes = calculatePanel(state.mine, state.years);
+      const suzeRes = calculatePanel(state.suze, state.years);
+
+      const getViewSeries = (calc) => {
+        if (state.activeView === 0) return calc.series.map(s => s.balance);
+        if (state.activeView === 1) return calc.series.map(s => s.afterTax);
+        return calc.series.map(s => s.todaysMoney);
+      };
+
+      const fullMine = getViewSeries(mineRes);
+      const fullMinePaid = mineRes.series.map(s => s.paidIn);
+      const fullSuze = getViewSeries(suzeRes);
+      const fullSuzePaid = suzeRes.series.map(s => s.paidIn);
+
+      let startTime = null;
+      const totalYears = state.years;
+
+      function tick(now) {
+        if (!isGrowthAnimating) return;
+        if (typeof now !== 'number' || isNaN(now)) now = performance.now();
+        if (startTime === null) startTime = now;
+
+        const elapsed = Math.max(0, now - startTime);
+        const progress = Math.min(1, Math.max(0, elapsed / durationMs));
+        // Smooth ease-in-out sweep from year 0 to the horizon
+        const ease = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        const currentYearFloat = ease * totalYears;
+        const currentYearIdx = Math.min(totalYears, Math.floor(currentYearFloat));
+        const yearFrac = currentYearFloat - currentYearIdx;
+
+        if (statusText) {
+          statusText.textContent = `Year ${currentYearIdx} / ${totalYears}`;
+        }
+
+        // Reveal the (already fully loaded) curves up to the current year.
+        // draw() repaints without re-layout, so the axes never move.
+        growthRevealYear = currentYearFloat;
+        if (growthChart) growthChart.draw();
+
+        // Dynamically count up the result cards in real time as money grows
+        const interpVal = (calc, key) => {
+          const idx = Math.min(calc.series.length - 1, currentYearIdx);
+          const nextIdx = Math.min(calc.series.length - 1, idx + 1);
+          const v0 = calc.series[idx][key];
+          const v1 = calc.series[nextIdx][key];
+          return v0 + (v1 - v0) * yearFrac;
+        };
+
+        document.getElementById('minePaidVal').textContent = formatEuro(interpVal(mineRes, 'paidIn'));
+        document.getElementById('mineFvVal').textContent = formatEuro(interpVal(mineRes, 'balance'));
+        document.getElementById('mineTaxVal').textContent = formatEuro(interpVal(mineRes, 'afterTax'));
+        document.getElementById('mineTodayVal').textContent = formatEuro(interpVal(mineRes, 'todaysMoney'));
+
+        document.getElementById('suzePaidVal').textContent = formatEuro(interpVal(suzeRes, 'paidIn'));
+        document.getElementById('suzeFvVal').textContent = formatEuro(interpVal(suzeRes, 'balance'));
+        document.getElementById('suzeTaxVal').textContent = formatEuro(interpVal(suzeRes, 'afterTax'));
+        document.getElementById('suzeTodayVal').textContent = formatEuro(interpVal(suzeRes, 'todaysMoney'));
+
+        const diffNow = Math.round(interpVal(suzeRes, 'todaysMoney')) - Math.round(interpVal(mineRes, 'todaysMoney'));
+        const diffSentenceEl = document.getElementById('diffSentence');
+        if (diffSentenceEl) {
+          if (diffNow >= 0) {
+            diffSentenceEl.innerHTML = `Suze's assumptions add <strong id="diffAmount">${formatEuro(diffNow)}</strong> in today's money`;
+          } else {
+            diffSentenceEl.innerHTML = `Mine's assumptions add <strong id="diffAmount">${formatEuro(-diffNow)}</strong> in today's money`;
+          }
+        }
+
+        if (progress < 1) {
+          growthAnimId = requestAnimationFrame(tick);
+        } else {
+          isGrowthAnimating = false;
+          growthRevealYear = null;
+          if (replayBtn) replayBtn.classList.remove('playing');
+          setTimeout(() => {
+            if (statusEl && !isGrowthAnimating) statusEl.classList.add('hidden');
+          }, 1200);
+          updateUI('none');
+        }
+      }
+
+      growthAnimId = requestAnimationFrame(tick);
+    }
+
+    // Update everything
+    function updateUI(chartMode = 'animate') {
+      if (isGrowthAnimating) {
+        cancelAnimationFrame(growthAnimId);
+        isGrowthAnimating = false;
+        growthRevealYear = null;
+        document.getElementById('replayBtn')?.classList.remove('playing');
+        document.getElementById('growthStatus')?.classList.add('hidden');
+      }
+
+      const mineRes = calculatePanel(state.mine, state.years);
+      const suzeRes = calculatePanel(state.suze, state.years);
+
+      // Monthly payment text
+      document.getElementById('mineMonthlyText').innerHTML = `P = <b>${formatEuro(mineRes.P, 2)}</b>/mo`;
+      document.getElementById('suzeMonthlyText').innerHTML = `P = <b>${formatEuro(suzeRes.P, 2)}</b>/mo`;
+
+      // Results cards
+      document.getElementById('minePaidVal').textContent = formatEuro(mineRes.final.paidIn);
+      document.getElementById('mineFvVal').textContent = formatEuro(mineRes.final.balance);
+      document.getElementById('mineTaxVal').textContent = formatEuro(mineRes.final.afterTax);
+      document.getElementById('mineTodayVal').textContent = formatEuro(mineRes.final.todaysMoney);
+
+      document.getElementById('suzePaidVal').textContent = formatEuro(suzeRes.final.paidIn);
+      document.getElementById('suzeFvVal').textContent = formatEuro(suzeRes.final.balance);
+      document.getElementById('suzeTaxVal').textContent = formatEuro(suzeRes.final.afterTax);
+      document.getElementById('suzeTodayVal').textContent = formatEuro(suzeRes.final.todaysMoney);
+
+      // Comparison sentence: exactly match the displayed rounded figures
+      const diff = Math.round(suzeRes.final.todaysMoney) - Math.round(mineRes.final.todaysMoney);
+      const diffSentenceEl = document.getElementById('diffSentence');
+      if (diff >= 0) {
+        diffSentenceEl.innerHTML = `Suze's assumptions add <strong id="diffAmount">${formatEuro(diff)}</strong> in today's money`;
+      } else {
+        diffSentenceEl.innerHTML = `Mine's assumptions add <strong id="diffAmount">${formatEuro(-diff)}</strong> in today's money`;
+      }
+
+      // Chart update
+      if (growthChart) {
+        const labels = Array.from({ length: state.years + 1 }, (_, i) => i);
+        growthChart.data.labels = labels;
+
+        // View selection series
+        const getViewData = (calc) => {
+          if (state.activeView === 0) return calc.series.map(s => s.balance);
+          if (state.activeView === 1) return calc.series.map(s => s.afterTax);
+          return calc.series.map(s => s.todaysMoney);
+        };
+
+        growthChart.data.datasets[0].data = getViewData(mineRes);
+        growthChart.data.datasets[1].data = mineRes.series.map(s => s.paidIn);
+        growthChart.data.datasets[2].data = getViewData(suzeRes);
+        growthChart.data.datasets[3].data = suzeRes.series.map(s => s.paidIn);
+
+        if (chartMode === 'none') {
+          growthChart.update('none');
+        } else {
+          growthChart.update();
+        }
+      }
+    }
+
+    // Connect slider & numeric input pairs
+    function linkInput(sliderId, numId, statePath, isPercent = false, decimals = 1) {
+      const slider = document.getElementById(sliderId);
+      const num = document.getElementById(numId);
+
+      const [panel, key] = statePath.split('.');
+
+      function apply(val) {
+        state[panel][key] = isPercent ? val / 100 : val;
+        updateUI('animate');
+      }
+
+      slider.addEventListener('input', () => {
+        const val = parseFloat(slider.value);
+        num.value = isPercent ? val.toFixed(decimals) : (decimals > 0 ? val.toFixed(decimals) : Math.round(val));
+        apply(val);
+      });
+
+      num.addEventListener('input', () => {
+        let val = parseFloat(num.value);
+        if (isNaN(val)) return;
+        slider.value = val;
+        apply(val);
+      });
+    }
+
+    // Link all inputs
+    function setupInputs() {
+      // Shared years
+      const yearsRange = document.getElementById('yearsRange');
+      const yearsDisp = document.getElementById('yearsDisp');
+      yearsRange.addEventListener('input', () => {
+        state.years = parseInt(yearsRange.value, 10);
+        yearsDisp.textContent = state.years;
+        updateUI('animate');
+      });
+
+      // Mine inputs
+      linkInput('minePriceRange', 'minePriceNum', 'mine.price', false, 2);
+      linkInput('mineHomeRange', 'mineHomeNum', 'mine.homeCost', false, 2);
+      linkInput('mineCupsRange', 'mineCupsNum', 'mine.cups', false, 0);
+      linkInput('mineReturnRange', 'mineReturnNum', 'mine.annualReturn', true, 1);
+      linkInput('mineInflationRange', 'mineInflationNum', 'mine.inflation', true, 1);
+      linkInput('mineTaxRange', 'mineTaxNum', 'mine.taxRate', true, 0);
+
+      // Suze inputs
+      linkInput('suzePriceRange', 'suzePriceNum', 'suze.price', false, 2);
+      linkInput('suzeHomeRange', 'suzeHomeNum', 'suze.homeCost', false, 2);
+      linkInput('suzeCupsRange', 'suzeCupsNum', 'suze.cups', false, 0);
+      linkInput('suzeReturnRange', 'suzeReturnNum', 'suze.annualReturn', true, 1);
+      linkInput('suzeInflationRange', 'suzeInflationNum', 'suze.inflation', true, 1);
+      linkInput('suzeTaxRange', 'suzeTaxNum', 'suze.taxRate', true, 0);
+
+      // Reset buttons
+      document.getElementById('mineResetBtn').addEventListener('click', resetMine);
+      document.getElementById('suzeResetBtn').addEventListener('click', resetSuze);
+    }
+
+    function resetMine() {
+      state.mine = { ...DEFAULTS.mine };
+      document.getElementById('minePriceRange').value = DEFAULTS.mine.price;
+      document.getElementById('minePriceNum').value = DEFAULTS.mine.price.toFixed(2);
+      document.getElementById('mineHomeRange').value = DEFAULTS.mine.homeCost;
+      document.getElementById('mineHomeNum').value = DEFAULTS.mine.homeCost.toFixed(2);
+      document.getElementById('mineCupsRange').value = DEFAULTS.mine.cups;
+      document.getElementById('mineCupsNum').value = DEFAULTS.mine.cups;
+      document.getElementById('mineReturnRange').value = (DEFAULTS.mine.annualReturn * 100).toFixed(1);
+      document.getElementById('mineReturnNum').value = (DEFAULTS.mine.annualReturn * 100).toFixed(1);
+      document.getElementById('mineInflationRange').value = (DEFAULTS.mine.inflation * 100).toFixed(1);
+      document.getElementById('mineInflationNum').value = (DEFAULTS.mine.inflation * 100).toFixed(1);
+      document.getElementById('mineTaxRange').value = Math.round(DEFAULTS.mine.taxRate * 100);
+      document.getElementById('mineTaxNum').value = Math.round(DEFAULTS.mine.taxRate * 100);
+      updateUI('animate');
+    }
+
+    function resetSuze() {
+      state.suze = { ...DEFAULTS.suze };
+      document.getElementById('suzePriceRange').value = DEFAULTS.suze.price;
+      document.getElementById('suzePriceNum').value = DEFAULTS.suze.price.toFixed(2);
+      document.getElementById('suzeHomeRange').value = DEFAULTS.suze.homeCost;
+      document.getElementById('suzeHomeNum').value = DEFAULTS.suze.homeCost.toFixed(2);
+      document.getElementById('suzeCupsRange').value = DEFAULTS.suze.cups;
+      document.getElementById('suzeCupsNum').value = DEFAULTS.suze.cups;
+      document.getElementById('suzeReturnRange').value = (DEFAULTS.suze.annualReturn * 100).toFixed(1);
+      document.getElementById('suzeReturnNum').value = (DEFAULTS.suze.annualReturn * 100).toFixed(1);
+      document.getElementById('suzeInflationRange').value = (DEFAULTS.suze.inflation * 100).toFixed(1);
+      document.getElementById('suzeInflationNum').value = (DEFAULTS.suze.inflation * 100).toFixed(1);
+      document.getElementById('suzeTaxRange').value = Math.round(DEFAULTS.suze.taxRate * 100);
+      document.getElementById('suzeTaxNum').value = Math.round(DEFAULTS.suze.taxRate * 100);
+      updateUI('animate');
+    }
+
+    function resetBoth() {
+      resetMine();
+      resetSuze();
+      state.years = DEFAULTS.years;
+      document.getElementById('yearsRange').value = DEFAULTS.years;
+      document.getElementById('yearsDisp').textContent = DEFAULTS.years;
+      updateUI('animate');
+    }
+
+    // Animation for Suze's return: 12.2% -> 7% over 1.5 seconds
+    let returnAnimId = null;
+    function animateSuzeReturn() {
+      cancelAnimationFrame(returnAnimId);
+      const currentPct = state.suze.annualReturn * 100;
+      // If close to 7%, animate back to 12.2%; otherwise animate to 7%
+      const targetPct = Math.abs(currentPct - 7.0) < 0.2 ? 12.2 : 7.0;
+      const startPct = currentPct;
+      const duration = 1500;
+      const startTime = performance.now();
+
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // Smooth cubic ease-in-out
+        const ease = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+        const val = startPct + (targetPct - startPct) * ease;
+        state.suze.annualReturn = val / 100;
+
+        document.getElementById('suzeReturnRange').value = val.toFixed(1);
+        document.getElementById('suzeReturnNum').value = val.toFixed(1);
+
+        updateUI('none');
+
+        if (progress < 1) {
+          returnAnimId = requestAnimationFrame(tick);
+        } else {
+          state.suze.annualReturn = targetPct / 100;
+          document.getElementById('suzeReturnRange').value = targetPct.toFixed(1);
+          document.getElementById('suzeReturnNum').value = targetPct.toFixed(1);
+          updateUI('animate');
+        }
+      }
+
+      returnAnimId = requestAnimationFrame(tick);
+    }
+
+    // Fullscreen toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.();
+      }
+    }
+
+    // Cursor toggle
+    function toggleCursor() {
+      document.body.classList.toggle('nocursor');
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ignore keys while typing in input
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      if (key === '1') {
+        setView(0);
+      } else if (key === '2') {
+        setView(1);
+      } else if (key === '3') {
+        setView(2);
+      } else if (key === ' ' || key === 'p') {
+        e.preventDefault();
+        playGrowthAnimation();
+      } else if (key === 'm') {
+        animateSuzeReturn();
+      } else if (key === 'r') {
+        resetBoth();
+      } else if (key === 'f') {
+        toggleFullscreen();
+      } else if (key === 'c') {
+        toggleCursor();
+      }
+    });
+
+    // Diagnostic function to check for any overflowing elements
+    window.checkOverflow = function() {
+      const results = {
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        documentScrollHeight: document.documentElement.scrollHeight,
+        documentScrollWidth: document.documentElement.scrollWidth,
+        hasDocVerticalScroll: document.documentElement.scrollHeight > window.innerHeight,
+        hasDocHorizontalScroll: document.documentElement.scrollWidth > window.innerWidth,
+        overflowingElements: []
+      };
+
+      const all = document.querySelectorAll('*');
+      for (const el of all) {
+        if (el.scrollHeight > el.clientHeight + 1 && getComputedStyle(el).overflowY !== 'hidden' && getComputedStyle(el).overflowY !== 'auto' && getComputedStyle(el).overflowY !== 'scroll') {
+          // Check if it's contributing to unwanted overflow
+          const rect = el.getBoundingClientRect();
+          if (rect.bottom > window.innerHeight || rect.right > window.innerWidth) {
+            results.overflowingElements.push({
+              tag: el.tagName,
+              id: el.id,
+              className: el.className,
+              rect: { top: rect.top, bottom: rect.bottom, height: rect.height },
+              scrollHeight: el.scrollHeight,
+              clientHeight: el.clientHeight
+            });
+          }
+        }
+      }
+      console.log('OVERFLOW CHECK RESULTS:', JSON.stringify(results));
+      return results;
+    };
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      setupInputs();
+
+      // Support URL search params (e.g. ?view=0, ?view=1, ?view=2, ?suze=7)
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('suze') === '7' || params.get('m') === '1') {
+        state.suze.annualReturn = 0.07;
+        document.getElementById('suzeReturnRange').value = '7.0';
+        document.getElementById('suzeReturnNum').value = '7.0';
+      }
+      const v = params.get('view');
+      const initView = (v === '1' || v === '2') ? parseInt(v, 10) : 0;
+      setView(initView, false);
+
+      // Run overflow check after layout settles
+      setTimeout(window.checkOverflow, 200);
+    });
+  </script>
+</body>
+</html>
